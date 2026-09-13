@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primer Checker | Jayish Lab</title>
+<style>
+  body{background:#f6f9f8;color:#22333b;font-family:'Segoe UI',system-ui,sans-serif;padding:2rem;max-width:860px;margin:auto;line-height:1.6}
+  h1{color:#3aa596}
+  .sub{color:#5c6b73;margin-bottom:1.5rem}
+  label{display:block;margin:1rem 0 .3rem;font-weight:600}
+  textarea{width:100%;height:64px;background:#fff;color:#22333b;border:1px solid #d5dedb;border-radius:8px;padding:.6rem;font-family:ui-monospace,monospace}
+  button{margin-top:1.2rem;background:#3aa596;color:#fff;border:none;padding:.7rem 1.6rem;border-radius:8px;font-weight:700;cursor:pointer}
+  .card{background:#fff;border:1px solid #e3eae7;border-radius:12px;padding:1.2rem;margin-top:1.2rem;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+  .card h3{color:#3aa596;margin-bottom:.6rem}
+  table{width:100%;border-collapse:collapse;font-size:.95rem}
+  td{padding:.35rem 0}
+  td:first-child{color:#5c6b73;width:45%}
+  .ok{color:#2e9e44;font-weight:700}
+  .warn{color:#b98207;font-weight:700}
+  .bad{color:#c0392b;font-weight:700}
+  .note{color:#5c6b73;font-size:.85rem;margin-top:1.5rem}
+  a{color:#3aa596}
+</style>
+</head>
+<body>
+<h1>Primer Checker</h1>
+<p class="sub">Evaluate PCR primers instantly: length, GC%, Tm, GC-clamp and self-dimer warnings. All calculations run in your browser — no sequence is ever uploaded.</p>
+
+<label for="fwd">Forward primer (5' to 3')</label>
+<textarea id="fwd" placeholder="e.g. ATGGCTAACCGTTGACGT"></textarea>
+
+<label for="rev">Reverse primer (5' to 3', optional)</label>
+<textarea id="rev" placeholder="e.g. ACGTCAACGGTTAGCCAT"></textarea>
+
+<button onclick="run()">Analyze Primers</button>
+
+<div id="out"></div>
+
+<p class="note">Educational tool. Tm uses the Wallace rule (&lt;14 nt) or the salt-adjusted formula Tm = 64.9 + 41 x (G+C - 16.4)/N. For rigorous design, validate with NCBI Primer-BLAST or Primer3.</p>
+<p><a href="../../">&larr; Back to Jayish Lab</a></p>
+
+<script>
+function clean(s){return s.toUpperCase().replace(/[^ATGC]/g,'')}
+function gc(s){var g=0;for(var i=0;i<s.length;i++){var c=s[i];if(c==='G'||c==='C')g++}return g}
+function tm(s){var n=s.length,g=gc(s);if(n===0)return 0;if(n<14)return 2*(n-g)+4*g;return 64.9+41*(g-16.4)/n}
+function rc(s){var m={A:'T',T:'A',G:'C',C:'G'},o='';for(var i=s.length-1;i>=0;i--)o+=m[s[i]];return o}
+function sd(s){var r=rc(s);for(var i=0;i+6<=s.length;i++)if(s.indexOf(r.substring(i,i+6))>-1)return true;return false}
+function row(l,v,c){return '<tr><td>'+l+'</td><td class="'+(c||'')+'">'+v+'</td></tr>'}
+function card(name,seq){
+  var n=seq.length,g=gc(seq),p=n?100*g/n:0
+  var clamp=(seq[n-1]==='G'||seq[n-1]==='C')
+  var dimer=sd(seq)
+  var lenCls=(n>=18&&n<=24)?'ok':(n>=15&&n<=30)?'warn':'bad'
+  var gcCls=(p>=40&&p<=60)?'ok':(p>=30&&p<=70)?'warn':'bad'
+  var h='<div class="card"><h3>'+name+'</h3><table>'
+  h+=row('Sequence (cleaned)',seq)
+  h+=row('Length',n+' nt',lenCls)
+  h+=row('GC content',p.toFixed(1)+'%',gcCls)
+  h+=row('Tm',tm(seq).toFixed(1)+' C')
+  h+=row('GC-clamp (3-prime end G/C)',clamp?'Yes':'No',clamp?'ok':'warn')
+  h+=row('Self-dimer risk (simple check)',dimer?'Warning: possible self-complementarity':'Low',dimer?'warn':'ok')
+  return h+'</table></div>'
+}
+function run(){
+  var f=clean(document.getElementById('fwd').value)
+  var r=clean(document.getElementById('rev').value)
+  if(!f&&!r){document.getElementById('out').innerHTML='<div class="card"><h3>No valid sequence</h3><p>Enter a primer using A/T/G/C only.</p></div>';return}
+  var out=''
+  if(f)out+=card('Forward primer',f)
+  if(r)out+=card('Reverse primer',r)
+  if(f&&r){
+    var d=Math.abs(tm(f)-tm(r))
+    var cls=d<=2?'ok':(d<=5?'warn':'bad')
+    out+='<div class="card"><h3>Primer pair</h3><table>'+row('Tm difference',d.toFixed(1)+' C (ideal <= 2 C)',cls)+'</table></div>'
+  }
+  document.getElementById('out').innerHTML=out
+}
+</script>
+</body>
+</html>
