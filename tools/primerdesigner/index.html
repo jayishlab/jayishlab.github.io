@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primer Designer | Jayish Lab</title>
+<style>
+  body{background:#f6f9f8;color:#22333b;font-family:'Segoe UI',system-ui,sans-serif;padding:2rem;max-width:1000px;margin:auto;line-height:1.6}
+  h1{color:#3aa596}
+  .sub{color:#5c6b73;margin-bottom:1.5rem}
+  label{display:block;margin:1rem 0 .3rem;font-weight:600}
+  textarea{width:100%;height:110px;background:#fff;border:1px solid #d5dedb;border-radius:8px;padding:.6rem;font-family:ui-monospace,monospace;font-size:.85rem}
+  input[type=file]{margin-top:.5rem}
+  button{margin-top:1.2rem;background:#3aa596;color:#fff;border:none;padding:.7rem 1.6rem;border-radius:8px;font-weight:700;cursor:pointer}
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-top:1.5rem;font-size:.82rem}
+  th{background:#3aa596;color:#fff;padding:.6rem .5rem;text-align:left}
+  td{padding:.5rem;border-bottom:1px solid #eef3f1;vertical-align:top}
+  .mono{font-family:ui-monospace,monospace;word-break:break-all}
+  .card{background:#fff;border:1px solid #e3eae7;border-radius:12px;padding:1.2rem;margin-top:1.2rem}
+  .note{color:#5c6b73;font-size:.85rem;margin-top:1.5rem}
+  a{color:#3aa596}
+</style>
+</head>
+<body>
+<h1>Primer Designer <span style="font-size:.9rem;background:#e6f4f1;color:#3aa596;padding:.2rem .7rem;border-radius:20px">v3</span></h1>
+<p class="sub">Upload a FASTA template and get ranked primer pairs — designed with Primer3-style heuristic filtering, fully in your browser. No uploads, no accounts.</p>
+
+<label for="file">Upload FASTA file</label>
+<input type="file" id="file" accept=".fasta,.fa,.fna,.txt">
+
+<label for="seq">Or paste FASTA / raw sequence</label>
+<textarea id="seq" placeholder=">my_template&#10;ATGGCTAACCGTTGACGT..."></textarea>
+
+<button onclick="design()">Design Primers</button>
+<div id="info"></div>
+<div id="out"></div>
+
+<p class="note">Method: candidates (18-22 nt) filtered by Tm 57-63 C (salt-adjusted formula), GC 40-60%, 3-prime GC-clamp, no homopolymer runs, no self-complementarity; pairs require product 100-1000 bp and Tm difference &le;2 C; ranked by penalty score (concept after Primer3, Untergasser et al. 2012). Educational tool — confirm specificity with NCBI Primer-BLAST before ordering primers.</p>
+<p><a href="../../">&larr; Back to Jayish Lab</a></p>
+
+<script>
+function clean(s){return s.toUpperCase().replace(/[^ATGC]/g,'')}
+function parseFasta(t){var h='',s=[],lines=t.split(/\r?\n/);for(var i=0;i<lines.length;i++){var l=lines[i].trim();if(!l)continue;if(l[0]==='>'){if(!h)h=l.substring(1);else break}else s.push(l)}return{header:h||'template',seq:clean(s.join(''))}}
+function gc(s){var g=0;for(var i=0;i<s.length;i++){var c=s[i];if(c==='G'||c==='C')g++}return g}
+function tm(s){var n=s.length,g=gc(s);if(n<14)return 2*(n-g)+4*g;return 64.9+41*(g-16.4)/n}
+function rc(s){var m={A:'T',T:'A',G:'C',C:'G'},o='';for(var i=s.length-1;i>=0;i--)o+=m[s[i]];return o}
+function sd(s){var r=rc(s);for(var i=0;i+6<=s.length;i++)if(s.indexOf(r.substring(i,i+6))>-1)return true;return false}
+document.getElementById('file').addEventListener('change',function(e){
+  var f=e.target.files[0];if(!f)return;var r=new FileReader();
+  r.onload=function(){document.getElementById('seq').value=r.result};r.readAsText(f);
+});
+function cands(seq,rev){
+  var list=[];
+  for(var p=0;p<=seq.length-18;p++){
+    for(var L=18;L<=22&&p+L<=seq.length;L++){
+      var sub=seq.substr(p,L), s=rev?rc(sub):sub;
+      var g=gc(s), pct=100*g/L, t=tm(s);
+      if(pct<40||pct>60)continue;
+      if(t<57||t>63)continue;
+      var last=s[s.length-1]; if(last!=='G'&&last!=='C')continue;
+      if(/(.)\1{3}/.test(s))continue;
+      if(sd(s))continue;
+      list.push({p:p,L:L,s:s,t:t,pct:pct});
+    }
+  }
+  return list;
+}
+function design(){
+  var d=parseFasta(document.getElementById('seq').value);
+  var seq=d.seq;
+  if(seq.length<200){document.getElementById('out').innerHTML='<div class="card"><h3>Template too short</h3><p>Please provide at least 200 bp of sequence.</p></div>';return}
+  document.getElementById('info').innerHTML='<div class="card"><h3>'+d.header+'</h3><p>Template length: '+seq.length+' bp · GC: '+(100*gc(seq)/seq.length).toFixed(1)+'%</p></div>';
+  var F=cands(seq,false), R=cands(seq,true), out=[];
+  for(var i=0;i<F.length;i++){for(var j=0;j<R.length;j++){
+    var f=F[i], r=R[j];
+    if(r.p<=f.p)continue;
+    var prod=r.p+r.L-f.p;
+    if(prod<100||prod>1000)continue;
+    var diff=Math.abs(f.t-r.t); if(diff>2)continue;
+    var score=Math.abs(f.t-60)+Math.abs(r.t-60)+2*diff+Math.abs(f.pct-50)/10+Math.abs(r.pct-50)/10;
+    out.push({f:f,r:r,prod:prod,diff:diff,score:score});
+  }}
+  out.sort(function(a,b){return a.score-b.score});
+  if(!out.length){document.getElementById('out').innerHTML='<div class="card"><h3>No pairs found</h3><p>No primer pairs met all constraints. Try a longer template or check the sequence quality.</p></div>';return}
+  var html='<table><tr><th>#</th><th>Forward (5-3)</th><th>Pos</th><th>Tm</th><th>GC%</th><th>Reverse (5-3)</th><th>Pos</th><th>Tm</th><th>GC%</th><th>Product</th><th>Score</th></tr>';
+  for(var k=0;k<Math.min(10,out.length);k++){
+    var o=out[k];
+    html+='<tr><td>'+(k+1)+'</td><td class="mono">'+o.f.s+'</td><td>'+(o.f.p+1)+'</td><td>'+o.f.t.toFixed(1)+'</td><td>'+o.f.pct.toFixed(0)+'</td><td class="mono">'+o.r.s+'</td><td>'+(o.r.p+1)+'</td><td>'+o.r.t.toFixed(1)+'</td><td>'+o.r.pct.toFixed(0)+'</td><td>'+o.prod+' bp</td><td>'+o.score.toFixed(2)+'</td></tr>';
+  }
+  document.getElementById('out').innerHTML=html+'</table>';
+}
+</script>
+</body>
+</html>
