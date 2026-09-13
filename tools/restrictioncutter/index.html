@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restriction Cutter | Jayish Lab</title>
+<style>
+  body{background:#f6f9f8;color:#22333b;font-family:'Segoe UI',system-ui,sans-serif;padding:2rem;max-width:900px;margin:auto;line-height:1.6}
+  h1{color:#3aa596}
+  .sub{color:#5c6b73;margin-bottom:1.5rem}
+  textarea{width:100%;height:100px;background:#fff;border:1px solid #d5dedb;border-radius:8px;padding:.6rem;font-family:ui-monospace,monospace;font-size:.85rem}
+  button{background:#3aa596;color:#fff;border:none;padding:.6rem 1.2rem;border-radius:20px;font-weight:700;cursor:pointer;margin:.3rem .2rem}
+  button.sec{background:#e6f4f1;color:#3aa596}
+  table{width:100%;border-collapse:collapse;background:#fff;margin-top:1rem;font-size:.9rem}
+  th{background:#3aa596;color:#fff;padding:.5rem;text-align:left}
+  td{padding:.45rem .5rem;border-bottom:1px solid #eef3f1}
+  .star{color:#b98207;font-weight:700}
+  .grey{color:#9aa7ad}
+  .note{color:#5c6b73;font-size:.85rem;margin-top:1.5rem}
+  a{color:#3aa596}
+</style>
+</head>
+<body>
+<h1>Restriction Cutter</h1>
+<p class="sub">Paste a DNA sequence and the tool scans every enzyme in its database, ranks them by cut sites, and flags the best single cutters. All in your browser.</p>
+
+<textarea id="seq" placeholder="Paste DNA sequence (FASTA header optional)"></textarea>
+<label><input type="checkbox" id="circular"> Circular DNA (plasmid)</label><br>
+<button onclick="analyze()">Find Best Enzyme</button>
+<div id="filters"></div>
+<div id="out"></div>
+
+<p class="note"><strong>Limitations:</strong> this tool recognises palindromic recognition sites only; cut positions are assumed at the start of the site (overhang offsets are not modelled); star activity, methylation and buffer conditions are not considered. For cloning decisions, verify results with NEBcutter or supplier documentation. Educational simulation only.</p>
+<p><a href="../../">&larr; Back to Jayish Lab</a></p>
+
+<script>
+// ---------- DATA: enzyme database ----------
+var ENZYMES = [
+  {name:'AluI', site:'AGCT'}, {name:'HaeIII', site:'GGCC'}, {name:'MspI', site:'CCGG'},
+  {name:'TaqI', site:'TCGA'}, {name:'RsaI', site:'GTAC'}, {name:'DpnII', site:'GATC'},
+  {name:'EcoRI', site:'GAATTC'}, {name:'BamHI', site:'GGATCC'}, {name:'HindIII', site:'AAGCTT'},
+  {name:'PstI', site:'CTGCAG'}, {name:'SalI', site:'GTCGAC'}, {name:'XhoI', site:'CTCGAG'},
+  {name:'KpnI', site:'GGTACC'}, {name:'SacI', site:'GAGCTC'}, {name:'EcoRV', site:'GATATC'},
+  {name:'NcoI', site:'CCATGG'}, {name:'NdeI', site:'CATATG'}, {name:'ClaI', site:'ATCGAT'},
+  {name:'SmaI', site:'CCCGGG'}, {name:'NotI', site:'GCGGCCGC'}, {name:'AscI', site:'GGCGCGCC'},
+  {name:'SwaI', site:'ATTTAAAT'}, {name:'XbaI', site:'TCTAGA'}, {name:'SpeI', site:'ACTAGT'}, {name:'NheI', site:'GCTAGC'}
+];
+
+// ---------- HELPERS ----------
+function clean(s){ return s.toUpperCase().replace(/[^ATGC]/g,''); }
+
+// Saari positions dhundo jahan site milti hai
+function findSites(seq, site){
+  var pos=[], i=seq.indexOf(site);
+  while(i>-1){ pos.push(i); i=seq.indexOf(site, i+1); }
+  return pos;
+}
+
+// Cuts se fragment sizes — circular vs linear ka FARAK isi function mein hai
+function fragments(cuts, len, circular){
+  if(cuts.length===0) return [len];            // koi site nahi = uncut
+  var f=[];
+  if(circular){
+    for(var i=0;i<cuts.length;i++){
+      var next=(i+1<cuts.length)? cuts[i+1] : cuts[0]+len;   // wrap-around tukda
+      f.push(next-cuts[i]);
+    }
+  } else {
+    f.push(cuts[0]);                            // start → pehla cut
+    for(var i=1;i<cuts.length;i++) f.push(cuts[i]-cuts[i-1]);
+    f.push(len-cuts[cuts.length-1]);            // aakhri cut → end
+  }
+  return f;
+}
+
+var ROWS=[];   // analyze ke baad sab enzyme results yahan
+
+function analyze(){
+  var seq=clean(document.getElementById('seq').value);
+  if(seq.length<8){ document.getElementById('out').innerHTML='<p>Sequence too short.</p>'; return; }
+  var circular=document.getElementById('circular').checked;
+  ROWS=[];
+  for(var e=0;e<ENZYMES.length;e++){
+    var cuts=findSites(seq, ENZYMES[e].site);
+    ROWS.push({ name:ENZYMES[e].name, cls:ENZYMES[e].site.length,
+                n:cuts.length, frags:fragments(cuts, seq.length, circular) });
+  }
+  ROWS.sort(function(a,b){ return a.n-b.n || a.name.localeCompare(b.name); });
+  renderFilters();
+  render('all');
+}
+
+function renderFilters(){
+  document.getElementById('filters').innerHTML =
+    '<button class="sec" onclick="render(\'all\')">All enzymes</button>'+
+    '<button class="sec" onclick="render(\'4\')">4-cutters</button>'+
+    '<button class="sec" onclick="render(\'6\')">6-cutters</button>'+
+    '<button class="sec" onclick="render(\'8\')">8-cutters</button>'+
+    '<button class="sec" onclick="render(\'single\')">Single cutters</button>';
+}
+
+function render(mode){
+  var rows=ROWS.filter(function(r){
+    if(mode==='all') return true;
+    if(mode==='single') return r.n===1;
+    return r.cls===+mode;
+  });
+  var h='<table><tr><th>Enzyme</th><th>Sites</th><th>Fragment sizes (bp)</th></tr>';
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    var tag = r.n===1 ? ' <span class="star">★ best single cutter</span>' : (r.n===0 ? ' <span class="grey">(cannot cut)</span>' : '');
+    h+='<tr><td>'+r.name+tag+'</td><td>'+r.n+'</td><td>'+r.frags.join(', ')+'</td></tr>';
+  }
+  document.getElementById('out').innerHTML=h+'</table>';
+}
+</script>
+</body>
+</html>
