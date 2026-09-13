@@ -5,22 +5,51 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jayish Lab | Bioinformatics Tools & Blog</title>
 <style>
-  :root { --bg:#0d1117; --card:#161b22; --text:#e6edf3; --accent:#58a6ff; --muted:#8b949e; }
+  :root { --teal:#3aa596; --ink:#22333b; --bg:#f6f9f8; --card:#ffffff; --muted:#5c6b73; }
   * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', system-ui, sans-serif; }
-  body { background:var(--bg); color:var(--text); }
-  nav { display:flex; justify-content:space-between; align-items:center; padding:1rem 2rem; border-bottom:1px solid #21262d; }
-  nav .logo { font-weight:700; color:var(--accent); }
-  nav a { color:var(--muted); text-decoration:none; margin-left:1.5rem; }
-  nav a:hover { color:var(--text); }
-  .hero { text-align:center; padding:5rem 1.5rem 3rem; }
-  .hero h1 { font-size:2.5rem; margin-bottom:1rem; }
-  .hero p { color:var(--muted); max-width:640px; margin:0 auto 2rem; }
-  .btn { display:inline-block; background:var(--accent); color:#0d1117; padding:.7rem 1.5rem; border-radius:8px; text-decoration:none; font-weight:600; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.5rem; padding:2rem; max-width:1000px; margin:0 auto; }
-  .card { background:var(--card); border:1px solid #21262d; border-radius:12px; padding:1.5rem; }
-  .card h3 { margin-bottom:.5rem; color:var(--accent); }
-  .card p { color:var(--muted); font-size:.95rem; }
-  footer { text-align:center; padding:2rem; color:var(--muted); border-top:1px solid #21262d; margin-top:3rem; font-size:.9rem; }
+  body { background:var(--bg); color:var(--ink); }
+  nav { position:sticky; top:0; background:#fff; display:flex; justify-content:space-between; align-items:center; padding:1rem 2rem; box-shadow:0 1px 4px rgba(0,0,0,.08); z-index:10; }
+  nav .logo { font-weight:800; font-size:1.25rem; color:var(--teal); }
+  nav a { color:var(--muted); text-decoration:none; margin-left:1.4rem; font-weight:600; font-size:.95rem; }
+  nav a:hover { color:var(--teal); }
+  .wrap { max-width:1080px; margin:auto; padding:0 1.5rem; }
+  .hero { display:grid; grid-template-columns:1.1fr .9fr; gap:3rem; align-items:center; padding:5rem 0 3rem; }
+  .hero h1 { font-size:2.9rem; line-height:1.15; margin-bottom:1.2rem; }
+  .hero p { color:var(--muted); font-size:1.08rem; margin-bottom:2rem; }
+  .btn { display:inline-block; background:var(--teal); color:#fff; padding:.8rem 1.8rem; border-radius:8px; text-decoration:none; font-weight:700; margin-right:.6rem; }
+  .btn.outline { background:transparent; color:var(--teal); border:2px solid var(--teal); }
+  .term { background:#0d1117; color:#e6edf3; border-radius:14px; padding:1.3rem 1.4rem; font-family:ui-monospace,monospace; font-size:.82rem; line-height:1.7; box-shadow:0 20px 40px rgba(0,0,0,.25); }
+  .term .dots span { display:inline-block; width:11px; height:11px; border-radius:50%; margin-right:6px; }
+  .term .ok { color:#3fb950; }
+  .term .cmd { color:#7fd4c6; }
+  .logos { display:flex; gap:2.6rem; justify-content:center; flex-wrap:wrap; padding:2rem 0; color:#9aa7ad; font-weight:800; letter-spacing:1px; font-size:.9rem; }
+  section { padding:3.5rem 0; }
+  h2 { text-align:center; font-size:2rem; margin-bottom:.5rem; }
+  .underline { width:60px; height:4px; background:var(--teal); margin:0 auto 2.5rem; border-radius:2px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1.5rem; }
+  .card { background:var(--card); border-radius:14px; padding:1.8rem; box-shadow:0 2px 10px rgba(0,0,0,.06); text-align:center; }
+  .icon { width:64px; height:64px; background:#e6f4f1; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; margin:0 auto 1rem; }
+  .card h3 { margin-bottom:.6rem; }
+  .card p { color:var(--muted); font-size:.94rem; }
+  .card a { display:inline-block; margin-top:1rem; color:var(--teal); font-weight:700; text-decoration:none; }
+  .badge { display:inline-block; background:#e6f4f1; color:var(--teal); font-size:.72rem; font-weight:800; letter-spacing:1px; padding:.3rem .8rem; border-radius:20px; margin-bottom:.8rem; }
+  .quote { display:grid; grid-template-columns:.8fr 1.2fr; gap:3rem; align-items:center; }
+  .quote .big { font-size:6rem; text-align:center; }
+  .quote h2 { text-align:left; font-size:2.1rem; margin-bottom:1rem; }
+  .quote p { color:var(--muted); }
+  .band { background:var(--teal); color:#fff; text-align:center; padding:4rem 1.5rem; }
+  .band h2 { color:#fff; }
+  .band p { max-width:660px; margin:0 auto 1.8rem; opacity:.93; }
+  .band .btn { background:#fff; color:var(--teal); }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1.5rem; text-align:center; }
+  .stat b { font-size:2.7rem; color:var(--teal); display:block; }
+  .stat span { color:var(--muted); }
+  details { background:#fff; border-radius:10px; padding:1rem 1.3rem; margin-bottom:.9rem; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+  summary { font-weight:700; cursor:pointer; }
+  details p { color:var(--muted); margin-top:.6rem; font-size:.95rem; }
+  footer { background:var(--ink); color:#cfd8dc; text-align:center; padding:2.5rem 1rem; margin-top:3rem; font-size:.9rem; }
+  footer a { color:#7fd4c6; text-decoration:none; margin:0 .5rem; }
+  @media (max-width:840px){ .hero,.quote { grid-template-columns:1fr; } .quote .big{ font-size:4rem; } }
 </style>
 </head>
 <body>
@@ -29,21 +58,125 @@
   <div>
     <a href="index.html">Home</a>
     <a href="tools/">Tools</a>
+    <a href="#projects">Projects</a>
     <a href="blog/">Blog</a>
     <a href="about.html">About</a>
     <a href="https://github.com/amankumarres">GitHub</a>
   </div>
 </nav>
-<section class="hero">
-  <h1>Bioinformatics Tools, Simplified.</h1>
-  <p>Jayish Lab builds free, browser-based tools and plain-English guides for life-science students. Tools by a biologist, for biologists.</p>
-  <a class="btn" href="tools/">Try the Primer Checker</a>
-</section>
-<section class="grid">
-  <div class="card"><h3>Primer Checker</h3><p>Evaluate PCR primers instantly: Tm, GC%, GC-clamp and self-dimer warnings — right in your browser. (In development)</p></div>
-  <div class="card"><h3>AMR-Scan Pipeline</h3><p>Open-source Nextflow pipeline for genotypic AMR prediction in bacterial pathogens — available on GitHub.</p></div>
-  <div class="card"><h3>Blog</h3><p>Plain-English explanations of bioinformatics concepts, from AMR genomics to primer design.</p></div>
-</section>
-<footer>© 2026 Jayish Lab · Built by Aman Kumar · Hosted on GitHub Pages</footer>
+
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <h1>Bioinformatics Tools, Simplified.</h1>
+      <p>Jayish Lab builds free, browser-based tools and plain-English guides for life-science students. No installs. No sign-ups. No sequence uploads.</p>
+      <a class="btn" href="tools/primerchecker/">Get Started</a>
+      <a class="btn outline" href="#projects">Explore Projects</a>
+    </div>
+    <div class="term">
+      <div class="dots"><span style="background:#ff5f56"></span><span style="background:#ffbd2e"></span><span style="background:#27c93f"></span></div>
+      <br>
+      <span class="cmd">$ nextflow run main.nf</span><br>
+      executor &gt; local (6)<br>
+      FETCH_GENOME (3)&nbsp;&nbsp;| 3 of 3 <span class="ok">✔</span><br>
+      RUN_AMRFINDER (3)&nbsp;| 3 of 3 <span class="ok">✔</span><br>
+      <span class="ok">Succeeded : 6</span><br>
+      <span class="cmd">$ Rscript plot_amr.R</span><br>
+      Plot saved: results/amr_genes_per_strain.png
+    </div>
+  </section>
+
+  <div class="logos">
+    <span>NEXTFLOW</span><span>AMRFINDERPLUS</span><span>NCBI</span><span>CONDA</span><span>R</span><span>GITHUB</span>
+  </div>
+
+  <section>
+    <h2>What We Build</h2>
+    <div class="underline"></div>
+    <div class="grid">
+      <div class="card"><div class="icon">🧬</div><h3>Primer Checker</h3><p>Evaluate PCR primers instantly: Tm, GC%, GC-clamp and self-dimer warnings — right in your browser.</p><a href="tools/primerchecker/">Open Tool →</a></div>
+      <div class="card"><div class="icon">🦠</div><h3>AMR Scan Pipeline</h3><p>Reproducible Nextflow pipeline for genotypic AMR prediction in bacterial pathogens, with R visualization.</p><a href="https://github.com/amankumarres/AMR-Scan-Nextflow">View on GitHub →</a></div>
+      <div class="card"><div class="icon">📚</div><h3>Blog</h3><p>Plain-English explanations of bioinformatics concepts, from AMR genomics to primer design.</p><a href="blog/">Read Posts →</a></div>
+    </div>
+  </section>
+
+  <section class="quote">
+    <div class="big">🧬</div>
+    <div>
+      <h2>"Tools by a biologist, for biologists."</h2>
+      <p>Every tool at Jayish Lab is born from real bench struggle — failing PCRs, primers that never worked, and pipelines that broke at 2 AM. We build what we wished existed when we were learning.</p>
+    </div>
+  </section>
+</div>
+
+<div class="band">
+  <h2>Find out more about what we do</h2>
+  <p>From reproducible Nextflow pipelines for AMR genomics to instant browser tools for molecular biology — explore the methods and science behind every Jayish Lab tool.</p>
+  <a class="btn" href="blog/">Learn Methods</a>
+</div>
+
+<div class="wrap">
+  <section>
+    <h2>Why Jayish Lab</h2>
+    <div class="underline"></div>
+    <div class="grid">
+      <div class="card"><div class="icon">🔒</div><h3>Privacy First</h3><p>Your sequences never leave your browser. No uploads, no servers, no tracking.</p></div>
+      <div class="card"><div class="icon">⚡</div><h3>Instant Results</h3><p>No queues, no accounts, no waiting. Paste a sequence, get an answer.</p></div>
+      <div class="card"><div class="icon">🆓</div><h3>Free Forever</h3><p>Open source under the MIT license. Use it for study, thesis or teaching.</p></div>
+      <div class="card"><div class="icon">📖</div><h3>Learn As You Go</h3><p>Every tool explains the science and formulas behind its results.</p></div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <h2>Our Projects</h2>
+    <div class="underline"></div>
+    <div class="grid">
+      <div class="card"><span class="badge">NEXTFLOW</span><h3>AMR Scan</h3><p>Multi-strain genotypic AMR prediction with AMRFinderPlus + R visualization. Validated against manual analysis.</p><a href="https://github.com/amankumarres/AMR-Scan-Nextflow">View on GitHub →</a></div>
+      <div class="card"><span class="badge">JUPYTER</span><h3>Genotypic AMR Prediction</h3><p>Manual analysis of Klebsiella pneumoniae NTUH-K2044: AMR determinants and genomic context.</p><a href="https://github.com/amankumarres/Genotypic-AMR-Prediction-Pipeline">View on GitHub →</a></div>
+      <div class="card"><span class="badge">LIVE TOOL</span><h3>Primer Checker</h3><p>Browser-based primer evaluation: length, GC%, Tm, GC-clamp, self-dimer and pair Tm difference.</p><a href="tools/primerchecker/">Open Tool →</a></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="stats">
+      <div class="stat"><b data-target="3">0</b><span>genomes per pipeline run</span></div>
+      <div class="stat"><b data-target="6">0</b><span>automated tasks per run</span></div>
+      <div class="stat"><b data-target="4">0</b><span>AMR genes validated</span></div>
+      <div class="stat"><b data-target="100" data-suffix="%">0</b><span>reproducible workflows</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Recent Blog Posts</h2>
+    <div class="underline"></div>
+    <div class="grid">
+      <div class="card"><span class="badge">COMING SOON</span><h3>Why Primer Design Fails</h3><p>The science behind melting temperature, GC-clamps and the mistakes every beginner makes.</p><a href="blog/">Read →</a></div>
+      <div class="card"><span class="badge">COMING SOON</span><h3>AMR Genomics in 10 Minutes</h3><p>What resistance genes are, how we find them in genomes, and why it matters for public health.</p><a href="blog/">Read →</a></div>
+      <div class="card"><span class="badge">COMING SOON</span><h3>Nextflow for Wet-Lab Biologists</h3><p>From pipettes to pipelines: why reproducible workflows are the future of biology.</p><a href="blog/">Read →</a></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Questions, Answered</h2>
+    <div class="underline"></div>
+    <details><summary>Do my sequences get uploaded to a server?</summary><p>No. Every calculation runs inside your browser. Your data never leaves your computer.</p></details>
+    <details><summary>Is Jayish Lab free to use?</summary><p>Yes — free forever, and open source under the MIT license.</p></details>
+    <details><summary>Can I cite Jayish Lab tools in my thesis?</summary><p>Absolutely. Each tool page lists the formulas used, so you can cite them with confidence.</p></details>
+    <details><summary>Who builds Jayish Lab?</summary><p>Aman Kumar — a life-sciences undergraduate trained in bioinformatics through Wellcome Connecting Science and University of Leeds programmes.</p></details>
+  </section>
+</div>
+
+<footer>
+  © 2026 Jayish Lab · Built by Aman Kumar · Hosted on GitHub Pages<br>
+  <a href="tools/">Tools</a> · <a href="blog/">Blog</a> · <a href="about.html">About</a> · <a href="https://github.com/amankumarres">GitHub</a>
+</footer>
+
+<script>
+document.querySelectorAll('.stat b').forEach(function(el){
+  var target=+el.dataset.target, suffix=el.dataset.suffix||'', cur=0;
+  var step=Math.max(1,Math.round(target/40));
+  var t=setInterval(function(){ cur+=step; if(cur>=target){cur=target;clearInterval(t);} el.textContent=cur+suffix; },30);
+});
+</script>
 </body>
 </html>
